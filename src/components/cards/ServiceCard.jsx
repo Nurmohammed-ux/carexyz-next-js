@@ -56,7 +56,7 @@ const ServiceCard = ({ service }) => {
             View Details
           </Link>
           <Link
-            href={`/book-now?service=${slug}`}
+            href={`/booking/${_id}`}
             className="btn btn-primary text-white btn-sm rounded-lg w-full shadow-sm"
           >
             Book Now

@@ -3,27 +3,29 @@
 import Link from "next/link";
 import NavLink from "../NavLink";
 import Image from "next/image";
+import AuthButton from "../buttons/AuthButton";
 
 const Navbar = () => {
   const links = (
     <>
       <li>
-        <NavLink href="/">Home</NavLink>
+        <NavLink href="/">হোম</NavLink>
       </li>
       <li>
-        <NavLink href="/services">All Services</NavLink>
+        <NavLink href="/services">সকল সার্ভিস</NavLink>
       </li>
       <li>
-        <NavLink href="/caregivers">Find Caregivers</NavLink>
+        <NavLink href="/my-bookings">আমার বুকিং</NavLink>
       </li>
       <li>
-        <NavLink href="/about">About Us</NavLink>
+        <NavLink href="/about">আমাদের সম্পর্কে</NavLink>
       </li>
       <li>
-        <NavLink href="/contact">Contact</NavLink>
+        <NavLink href="/contact">যোগাযোগ</NavLink>
       </li>
     </>
   );
+
   return (
     <div className="navbar bg-base-100 shadow-sm sticky top-0 z-50 px-4 lg:px-8">
       {/* Navbar Start: Mobile Menu & Logo */}
@@ -33,7 +35,7 @@ const Navbar = () => {
             tabIndex={0}
             role="button"
             className="btn btn-ghost lg:hidden"
-            aria-label="Open Menu"
+            aria-label="মেনু খুলুন"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -61,9 +63,9 @@ const Navbar = () => {
         {/* Brand Logo */}
         <Link href="/" className="px-2">
           <Image
-            src="/carexyzlogo.png" 
+            src="/carexyzlogo.png"
             height={100}
-            width={100} 
+            width={100}
             alt="Care.xyz Logo"
             priority
           />
@@ -77,17 +79,12 @@ const Navbar = () => {
 
       {/* Navbar End: Action Buttons */}
       <div className="navbar-end gap-2">
+        <AuthButton />
         <Link
-          href="/login"
-          className="btn btn-primary btn-outline px-2 py-3 btn-sm font-semibold text-base hidden sm:inline-flex"
+          href="/services"
+          className="btn btn-primary text-base btn-sm px-6 py-4 text-white font-semibold"
         >
-          Log In
-        </Link>
-        <Link
-          href="/book-now"
-          className="btn btn-primary text-base btn-sm px-2 py-3 text-white font-semibold"
-        >
-          Book Care Now
+          কেয়ার বুক করুন
         </Link>
       </div>
     </div>

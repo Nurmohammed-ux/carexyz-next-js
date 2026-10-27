@@ -108,7 +108,7 @@ const ServiceDetails = ({ service }) => {
 
             {/* Book Now Button */}
             <Link
-              href={`/book-now?service=${service.slug}`}
+              href={`/booking/${service._id}`}
               className="btn btn-primary text-white w-full rounded-2xl shadow-md btn-lg mt-2 font-bold"
             >
               এখনই বুক করুন
