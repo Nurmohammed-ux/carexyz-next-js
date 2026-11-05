@@ -1,27 +1,38 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Swal from "sweetalert2";
+
+const privateRoutes = ["/my-bookings", "/dashboard", "/booking"];
+
+const isPrivateRoute = (pathname) =>
+  privateRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
 
 const AuthButton = () => {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   if (status === "loading") {
     return (
-      <div className="w-20 h-8 bg-base-300 animate-pulse rounded-md hidden sm:inline-block"></div>
+      <div className="w-20 h-8 bg-base-300 animate-pulse rounded-md hidden sm:inline-block" />
     );
   }
 
-  // যদি ইউজার লগইন করা থাকে (authenticated)
-  if (status === "authenticated" || session) {
+  if (status === "authenticated" && session) {
     const handleLogout = async () => {
-      await signOut({ callbackUrl: "/login" });
-      Swal.fire({
-        icon: "success",
-        title: "লগআউট সফল হয়েছে",
-        timer: 1500,
-        showConfirmButton: false,
+      const query = searchParams.toString();
+      const currentUrl = `${pathname}${query ? `?${query}` : ""}`;
+
+      const callbackUrl = isPrivateRoute(pathname)
+        ? `/login?callbackUrl=${encodeURIComponent(currentUrl)}`
+        : currentUrl;
+
+      await signOut({
+        callbackUrl,
       });
     };
 
@@ -35,7 +46,6 @@ const AuthButton = () => {
     );
   }
 
-  // যদি লগইন করা না থাকে (unauthenticated)
   return (
     <Link
       href="/login"

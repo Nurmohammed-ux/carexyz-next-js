@@ -40,7 +40,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 py-12 px-6 lg:px-8">
+    <div className="bg-base-100 pt-16 pb-12 lg:pb-40 px-6 lg:px-8">
       <div className="space-y-12">
         {/* Header Section */}
         <div className="text-center space-y-3">

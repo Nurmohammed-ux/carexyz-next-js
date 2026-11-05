@@ -43,7 +43,6 @@ export default function MyBookingsPage({ bookings = [] }) {
   const router = useRouter();
 
   const handleDeleteBooking = async (id) => {
-    console.log(id)
     const result = await Swal.fire({
       title: "আপনি কি নিশ্চিত?",
       text: "বুকিংটি বাতিল করলে এটি আর পুনরুদ্ধার করা যাবে না!",
@@ -95,7 +94,7 @@ export default function MyBookingsPage({ bookings = [] }) {
   };
 
   return (
-    <section className="pt-16 pb-6 px-6 lg:px-8 text-center">
+    <section className="pt-16 pb-16 lg:pb-40 px-6 lg:px-8 text-center">
       <div>
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div className="text-left">
@@ -107,22 +106,17 @@ export default function MyBookingsPage({ bookings = [] }) {
               আপনার করা সকল সেবার বুকিংয়ের বর্তমান অবস্থা ট্র্যাক করুন।
             </p>
           </div>
-
-          <div className="bg-base-200 px-4 py-2 rounded-xl font-medium text-sm">
-            মোট বুকিং:{" "}
-            <span className="text-primary font-bold">{bookings.length}</span> টি
-          </div>
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 p-5">
             <h2 className="text-lg font-bold">Booking History</h2>
-            <span className="badge badge-primary badge-outline">
-              {bookings.length} Bookings
+            <span className="badge badge-primary text-base font-medium badge-outline">
+              {booking.length} Bookings
             </span>
           </div>
 
-          {bookings.length === 0 ? (
+          {booking.length === 0 ? (
             <div className="text-center py-20 bg-base-200/50 rounded-2xl border border-base-300">
               <FaCalendarAlt className="text-4xl text-primary mx-auto mb-4" />
 
@@ -156,7 +150,7 @@ export default function MyBookingsPage({ bookings = [] }) {
                 </thead>
 
                 <tbody>
-                  {bookings.map((booking, index) => {
+                  {booking.map((booking, index) => {
                     const status = (booking.status || "pending").toLowerCase();
 
                     return (
@@ -261,11 +255,11 @@ export default function MyBookingsPage({ bookings = [] }) {
               }
             }}
           >
-            <div className="modal-box max-w-2xl rounded-3xl p-0">
+            <div className="modal-box max-w-2xl rounded-xl p-0">
               <div className="flex items-start justify-between bg-primary p-6 text-primary-content sm:p-8">
-                <div>
-                  <p className="text-sm font-medium opacity-80">
-                    Care.xyz · বুকিং বিবরণী
+                <div className="flex flex-col items-start">
+                  <p className="text-base font-medium opacity-80">
+                    Care.xyz · বুকিং বিবরণী :
                   </p>
                   <h2
                     id="booking-modal-title"
@@ -273,7 +267,7 @@ export default function MyBookingsPage({ bookings = [] }) {
                   >
                     {selectedBooking.serviceName || "কেয়ার সার্ভিস"}
                   </h2>
-                  <p className="mt-1 break-all text-sm opacity-80">
+                  <p className="mt-2 break-all text-sm opacity-80">
                     বুকিং আইডি: {selectedBooking._id}
                   </p>
                 </div>

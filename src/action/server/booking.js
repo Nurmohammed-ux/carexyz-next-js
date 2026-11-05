@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { collections, dbConnect } from "@/lib/dbConnect";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { sendBookingInvoice } from "@/lib/mailer";
 
 const bookingCollection = dbConnect(collections.BOOKING || "bookings");
 
@@ -99,6 +100,18 @@ export const postBooking = async (request) => {
 
     const result = await bookingCollection.insertOne(newBooking);
 
+    const savedBooking = {
+      ...newBooking,
+      _id: result.insertedId,
+    };
+
+    try {
+      await sendBookingInvoice(savedBooking);
+    } catch (emailError) {
+      // Do not lose a successful booking because email delivery failed.
+      console.error("Booking saved, but invoice email failed:", emailError);
+    }
+
     return NextResponse.json(
       {
         success: true,
@@ -171,7 +184,6 @@ export const deleteBooking = async (request, { params }) => {
         message: "অনুমতি নেই (Unauthorized)!",
       };
     }
- 
 
     if (!ObjectId.isValid(id) || id.length !== 24) {
       return {

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Swal from "sweetalert2";
 import { FaMapMarkerAlt, FaClock, FaCheckCircle } from "react-icons/fa";
+import { createCheckoutSession } from "@/action/server/payment";
+
 
 const BookingPage = ({ service }) => {
   const { data: session, status: sessionStatus } = useSession();
@@ -14,6 +16,7 @@ const BookingPage = ({ service }) => {
 
   // Form states
   const [duration, setDuration] = useState(1);
+
   const [location, setLocation] = useState({
     division: "",
     district: "",
@@ -21,8 +24,10 @@ const BookingPage = ({ service }) => {
     address: "",
   });
 
-  // Calculate total cost dynamically
+  // Calculate total cost for display only.
+  // The server calculates the actual payment amount.
   const unitPrice = Number(service.startingPrice);
+
   const totalCost =
     Number.isFinite(unitPrice) && unitPrice > 0 ? duration * unitPrice : 0;
 
@@ -36,19 +41,17 @@ const BookingPage = ({ service }) => {
     }));
   };
 
-  // Confirm booking
+  // Start Stripe Checkout
   const handleConfirmBooking = async (e) => {
     e.preventDefault();
 
-    if (sessionStatus === "loading") {
-      return;
-    }
+    if (sessionStatus === "loading") return;
 
     if (!session?.user?.email) {
       await Swal.fire({
         icon: "warning",
         title: "লগইন প্রয়োজন",
-        text: "বুকিং করতে হলে আপনাকে প্রথমে লগইন করতে হবে।",
+        text: "পেমেন্ট করতে হলে আপনাকে প্রথমে লগইন করতে হবে।",
         confirmButtonColor: "#65B493",
       });
 
@@ -62,6 +65,7 @@ const BookingPage = ({ service }) => {
         "সময়কাল ১ থেকে ৩০-এর মধ্যে হতে হবে।",
         "warning",
       );
+
       return;
     }
 
@@ -76,56 +80,42 @@ const BookingPage = ({ service }) => {
         "অনুগ্রহ করে আপনার সম্পূর্ণ ঠিকানা প্রদান করুন।",
         "warning",
       );
+
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const bookingData = {
+      // Do not send userEmail, userName or totalCost.
+      // The Server Action gets the user from the session
+      // and calculates the amount from MongoDB.
+      const result = await createCheckoutSession({
         serviceId: service._id,
-        userEmail: session.user.email,
-        userName: session.user.name || "",
         duration,
         location,
-      };
-
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookingData),
       });
 
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
+      if (!result?.success) {
         await Swal.fire({
           icon: "error",
-          title: "বুকিং ব্যর্থ হয়েছে!",
-          text: result.message || "বুকিং সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।",
+          title: "পেমেন্ট শুরু করা যায়নি!",
+          text: result?.message || "আবার চেষ্টা করুন।",
           confirmButtonColor: "#65B493",
         });
 
         return;
       }
 
-      await Swal.fire({
-        icon: "success",
-        title: "বুকিং সফল হয়েছে!",
-        text: "আপনার বুকিংটি পেন্ডিং অবস্থায় রয়েছে। আমাদের টিম নিশ্চিত করলে আপনাকে জানানো হবে।",
-        confirmButtonColor: "#65B493",
-      });
-
-      router.push("/my-bookings");
+      // Redirect to Stripe-hosted Checkout.
+      window.location.assign(result.url);
     } catch (error) {
-      console.error("Booking submission error:", error);
+      console.error("Payment initialization error:", error);
 
       await Swal.fire({
         icon: "error",
         title: "সার্ভারে সমস্যা হয়েছে!",
-        text: "আপনার বুকিং সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।",
+        text: "পেমেন্ট শুরু করা যায়নি। আবার চেষ্টা করুন।",
         confirmButtonColor: "#65B493",
       });
     } finally {
@@ -134,7 +124,7 @@ const BookingPage = ({ service }) => {
   };
 
   return (
-    <div className="pt-16 pb-6 px-6 lg:px-8 text-center">
+    <div className="pt-16 pb-16 lg:pb-40 px-6 lg:px-8 text-center">
       {/* Page heading */}
       <div className="text-center mb-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-base-content">
@@ -261,7 +251,7 @@ const BookingPage = ({ service }) => {
             ) : (
               <>
                 <FaCheckCircle />
-                বুকিং কনফার্ম করুন (Pending)
+                পেমেন্ট করুন
               </>
             )}
           </button>
@@ -281,7 +271,11 @@ const BookingPage = ({ service }) => {
           <div>
             <p className="text-sm text-base-content/70">রেট:</p>
             <p className="font-medium">
-              ৳<span className="text-green-800 font-bold">{unitPrice.toLocaleString("en-BD")}</span> /{" "}
+              ৳
+              <span className="text-green-800 font-bold">
+                {unitPrice.toLocaleString("en-BD")}
+              </span>
+              {" / "}
               {service.priceUnit === "hour" ? "ঘণ্টা" : "দিন"}
             </p>
           </div>
@@ -303,9 +297,9 @@ const BookingPage = ({ service }) => {
             </span>
           </div>
 
-          <p className="text-[11px] text-base-content/60 text-center pt-2">
-            * বুকিং জমা দেওয়ার পর সেটি Pending অবস্থায় থাকবে। আমাদের টিম
-            নিশ্চিত করলে আপনাকে জানানো হবে।
+          <p className="text-base text-red-700 text-center pt-2">
+            * পেমেন্ট সফলভাবে সম্পন্ন হলে আপনার বুকিং তৈরি হবে। এরপর ইমেইলে
+            ইনভয়েস পাঠানো হবে।
           </p>
         </div>
       </div>

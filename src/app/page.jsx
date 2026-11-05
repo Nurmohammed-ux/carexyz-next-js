@@ -1,5 +1,6 @@
 import AboutSection from "@/components/homecomponent/AboutSection";
 import Banner from "@/components/homecomponent/Banner";
+import FAQSection from "@/components/homecomponent/FAQSection";
 import ServicePage from "@/components/homecomponent/ServicePage";
 import TestimonialsPage from "@/components/homecomponent/Testimonials";
 
@@ -34,6 +35,7 @@ export default function Home() {
         <AboutSection />
         <ServicePage />
         <TestimonialsPage />
+        <FAQSection />
       </main>
     </div>
   );

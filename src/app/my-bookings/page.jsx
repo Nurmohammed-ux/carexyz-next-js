@@ -16,7 +16,7 @@ const MyBookings = async () => {
 
   if (!result.success) {
     return (
-      <div className="max-w-6xl mx-auto py-20 px-4 text-center">
+      <div className="py-20 px-4 text-center">
         <h2 className="text-2xl font-bold text-error">
           বুকিং লোড করা যায়নি!
         </h2>

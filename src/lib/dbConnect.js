@@ -5,7 +5,8 @@ const dbName = process.env.DB_USER;
 export const collections = {
     SERVICE: "services",
     USER: "users",
-    BOOKING: "bookings"
+    BOOKING: "bookings",
+    PAYMENT: "payments"
 }
 
 

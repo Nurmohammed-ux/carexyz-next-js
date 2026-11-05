@@ -1,11 +1,42 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import NavLink from "../NavLink";
 import Image from "next/image";
 import AuthButton from "../buttons/AuthButton";
 
 const Navbar = () => {
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchRole = async () => {
+      try {
+        const response = await fetch("/api/user/role", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (active) {
+          setRole(data.role);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user role:", error);
+      }
+    };
+
+    fetchRole();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const links = (
     <>
       <li>
@@ -17,6 +48,13 @@ const Navbar = () => {
       <li>
         <NavLink href="/my-bookings">আমার বুকিং</NavLink>
       </li>
+
+      {role === "admin" && (
+        <li>
+          <NavLink href="/dashboard/admin">অ্যাডমিন ড্যাশবোর্ড</NavLink>
+        </li>
+      )}
+
       <li>
         <NavLink href="/about">আমাদের সম্পর্কে</NavLink>
       </li>
@@ -28,7 +66,6 @@ const Navbar = () => {
 
   return (
     <div className="navbar bg-base-100 shadow-sm sticky top-0 z-50 px-4 lg:px-8">
-      {/* Navbar Start: Mobile Menu & Logo */}
       <div className="navbar-start">
         <div className="dropdown">
           <div
@@ -52,6 +89,7 @@ const Navbar = () => {
               />
             </svg>
           </div>
+
           <ul
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 w-52 p-2 shadow-lg"
@@ -60,7 +98,6 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Brand Logo */}
         <Link href="/" className="px-2">
           <Image
             src="/carexyzlogo.png"
@@ -72,14 +109,13 @@ const Navbar = () => {
         </Link>
       </div>
 
-      {/* Navbar Center: Desktop Links */}
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 gap-1">{links}</ul>
       </div>
 
-      {/* Navbar End: Action Buttons */}
       <div className="navbar-end gap-2">
         <AuthButton />
+
         <Link
           href="/services"
           className="btn btn-primary text-base btn-sm px-6 py-4 text-white font-semibold"

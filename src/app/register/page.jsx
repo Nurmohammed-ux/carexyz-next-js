@@ -18,6 +18,7 @@ import {
   FaShieldAlt,
   FaUser,
 } from "react-icons/fa";
+import { signIn } from "next-auth/react";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -44,17 +45,18 @@ const RegisterPage = () => {
     e.preventDefault();
     setError("");
 
-    const { password } = formData;
+    const { password, email } = formData;
 
-    // পাসওয়ার্ড ভ্যালিডেশন
     if (password.length < 6) {
       setError("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।");
       return;
     }
+
     if (!/[A-Z]/.test(password)) {
       setError("পাসওয়ার্ডে অন্তত ১টি বড় হাতের অক্ষর (Uppercase) থাকতে হবে।");
       return;
     }
+
     if (!/[a-z]/.test(password)) {
       setError("পাসওয়ার্ডে অন্তত ১টি ছোট হাতের অক্ষর (Lowercase) থাকতে হবে।");
       return;
@@ -63,24 +65,49 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
+      // 1. Create the user account
       const response = await postUser(formData);
 
-      if (response && response.success) {
+      if (!response?.success) {
+        setError(response?.message || "রেজিস্ট্রেশন ব্যর্থ হয়েছে।");
+        return;
+      }
+
+      // 2. Automatically sign in with NextAuth
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: callBack,
+      });
+
+      if (!result?.ok || result.error) {
+        console.error("Automatic login failed:", result);
+
         await Swal.fire({
-          icon: "success",
-          title: "অভিনন্দন!",
-          text: "আপনার রেজিস্ট্রেশন সফলভাবে সম্পন্ন হয়েছে।",
-          confirmButtonColor: "#22c55e",
-          confirmButtonText: "OK",
+          icon: "warning",
+          title: "রেজিস্ট্রেশন সফল হয়েছে!",
+          text: "আপনার অ্যাকাউন্ট তৈরি হয়েছে, কিন্তু স্বয়ংক্রিয় লগইন ব্যর্থ হয়েছে। অনুগ্রহ করে লগইন করুন।",
+          confirmButtonText: "লগইন করুন",
         });
 
-        router.refresh();
-        router.push(callBack);
-      } else {
-        setError(response?.message || "রেজিস্ট্রেশন ব্যর্থ হয়েছে।");
+        router.replace(`/login?callbackUrl=${encodeURIComponent(callBack)}`);
+        return;
       }
+
+      // 3. Show success and navigate to the original page
+      await Swal.fire({
+        icon: "success",
+        title: "অভিনন্দন!",
+        text: "রেজিস্ট্রেশন সফল হয়েছে। আপনাকে লগইন করানো হয়েছে!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // Full navigation ensures the proxy sees the new session cookie.
+      window.location.assign(result.url || callBack);
     } catch (err) {
-      console.error(err);
+      console.error("Registration error:", err);
       setError("কোথাও কোনো সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setLoading(false);

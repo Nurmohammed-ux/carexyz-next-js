@@ -44,23 +44,25 @@ const LoginPage = () => {
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
+        callbackUrl: callBack,
         redirect: false,
       });
 
       if (result?.ok && !result.error) {
-        Swal.fire({
+        await Swal.fire({
           icon: "success",
           title: "লগইন সফল হয়েছে!",
           timer: 1500,
           showConfirmButton: false,
         });
-        router.refresh();
-        router.push(callBack);
-      } else {
-        setError(result?.error || "ইমেল অথবা পাসওয়ার্ড ভুল রয়েছে।");
+
+        window.location.assign(result.url || callBack);
+        return;
       }
+
+      setError(result?.error || "ইমেল অথবা পাসওয়ার্ড ভুল রয়েছে।");
     } catch (err) {
-      console.error(err);
+      console.error("Login error:", err);
       setError("কোথাও কোনো সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setLoading(false);
@@ -245,7 +247,7 @@ const LoginPage = () => {
           <p className="text-center text-sm text-base-content/70">
             Care.xyz-এ নতুন অ্যাকাউন্ট আছে?{" "}
             <Link
-              href="/register"
+              href={`/register?callbackUrl=${encodeURIComponent(callBack)}`}
               className="text-primary font-bold hover:underline"
             >
               রেজিস্ট্রেশন করুন
