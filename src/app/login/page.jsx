@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import GoogleButton from "@/components/buttons/GoogleButton";
 
@@ -17,8 +17,7 @@ import {
 } from "react-icons/fa";
 import { signIn } from "next-auth/react";
 
-const LoginPage = () => {
-  const router = useRouter();
+const LoginContent = () => {
   const params = useSearchParams();
   const callBack = params.get("callbackUrl") || "/";
 
@@ -297,4 +296,16 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
+  );
+}

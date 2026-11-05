@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const privateRoutes = ["/my-bookings", "/dashboard", "/booking"];
@@ -14,7 +14,6 @@ const isPrivateRoute = (pathname) =>
 const AuthButton = () => {
   const { data: session, status } = useSession();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   if (status === "loading") {
     return (
@@ -24,8 +23,9 @@ const AuthButton = () => {
 
   if (status === "authenticated" && session) {
     const handleLogout = async () => {
-      const query = searchParams.toString();
-      const currentUrl = `${pathname}${query ? `?${query}` : ""}`;
+      // Get the current URL, including query parameters.
+      const query = window.location.search;
+      const currentUrl = `${pathname}${query}`;
 
       const callbackUrl = isPrivateRoute(pathname)
         ? `/login?callbackUrl=${encodeURIComponent(currentUrl)}`
@@ -46,9 +46,13 @@ const AuthButton = () => {
     );
   }
 
+  const loginUrl = isPrivateRoute(pathname)
+    ? `/login?callbackUrl=${encodeURIComponent(pathname)}`
+    : "/login";
+
   return (
     <Link
-      href="/login"
+      href={loginUrl}
       className="btn btn-primary btn-outline px-6 py-2 btn-sm font-semibold text-base hidden sm:inline-flex"
     >
       Log In

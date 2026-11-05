@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://carexyz.vercel.app"),
+  metadataBase: new URL("https://care-xyz-iota.vercel.app/"),
 
   title: {
     default: "Care.xyz | Trusted Babysitting & Elderly Care Services",

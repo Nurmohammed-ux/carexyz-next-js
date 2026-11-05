@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -20,7 +20,7 @@ import {
 } from "react-icons/fa";
 import { signIn } from "next-auth/react";
 
-const RegisterPage = () => {
+const RegisterContent = () => {
   const router = useRouter();
   const params = useSearchParams();
   const callBack = params.get("callbackUrl") || "/";
@@ -352,7 +352,7 @@ const RegisterPage = () => {
           <p className="text-center text-sm text-base-content/70">
             ইতিমধ্যেই অ্যাকাউন্ট আছে?{" "}
             <Link
-              href="/login"
+              href={`/login?callbackUrl=${encodeURIComponent(callBack)}`}
               className="text-primary font-bold hover:underline"
             >
               লগইন করুন
@@ -407,4 +407,16 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      }
+    >
+      <RegisterContent />
+    </Suspense>
+  );
+}

@@ -2,7 +2,7 @@ import { getSingleService } from "@/action/server/service";
 import ServiceDetails from "@/components/layout/ServiceDetails";
 import { notFound } from "next/navigation";
 
-const SITE_URL = "https://carexyz.vercel.app";
+const SITE_URL = "https://care-xyz-iota.vercel.app";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
